@@ -652,6 +652,7 @@ td.cell-updated {
   margin: 4px 8px !important;
   border-radius: 4px !important;
   border: none !important;
+  border-left: none !important; /* Blocklyデフォルトのインライン border-left を強制排除 */
   cursor: pointer !important;
   display: flex !important;
   align-items: center !important;
@@ -700,21 +701,21 @@ td.cell-updated {
   width: 6px !important; /* 選択時はカラーバーの幅を拡張してアクティブ感を強調 */
 }
 
-/* カテゴリーごとの個別インジケータカラー定義 (順序依存: :nth-child) */
+/* カテゴリーごとの個別インジケータカラー定義 (階層構造に適合) */
 /* 1. クエリ開始 (ロイヤルブルー) */
-.blocklyTreeRow:nth-child(1)::before {
+.blocklyToolboxContents > div:nth-child(1) .blocklyTreeRow::before {
   background-color: #1e3a8a !important;
 }
 /* 2. 句・接続 (スレートグレー) */
-.blocklyTreeRow:nth-child(2)::before {
+.blocklyToolboxContents > div:nth-child(2) .blocklyTreeRow::before {
   background-color: #475569 !important;
 }
 /* 3. 列・テーブル (セージグリーン) */
-.blocklyTreeRow:nth-child(3)::before {
+.blocklyToolboxContents > div:nth-child(3) .blocklyTreeRow::before {
   background-color: #16a34a !important;
 }
 /* 4. 条件・パラメータ (ゴールド) */
-.blocklyTreeRow:nth-child(4)::before {
+.blocklyToolboxContents > div:nth-child(4) .blocklyTreeRow::before {
   background-color: #b45309 !important;
 }
 
