@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visual SQL Simulator</title>
+  <!-- Google Fonts (Inter / Material Symbols) -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <link rel="stylesheet" href="./src/style.css">
+</head>
+<body>
+
+  <!-- 🏢 ヘッダー -->
+  <header class="app-header">
+    <div class="header-title-area">
+      <span class="material-symbols-outlined header-logo">database</span>
+      <h1 class="app-title">Visual SQL Simulator</h1>
+      <span class="app-subtitle">visql-sim</span>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" id="resetDbBtn" title="データベースを初期状態にリセットします。">
+        <span class="material-symbols-outlined">restart_alt</span>
+        DBリセット
+      </button>
+      <button class="btn btn-secondary" id="clearWorkspaceBtn" title="Blocklyワークスペースをクリアします。">
+        <span class="material-symbols-outlined">clear_all</span>
+        クリア
+      </button>
+    </div>
+  </header>
+
+  <!-- 🖼️ メインコンテナ（3ペイン） -->
+  <main class="app-container">
+    
+    <!-- ==========================================
+         1. 左ペイン: データソース (テーブル一覧)
+         ========================================== -->
+    <aside class="sidebar-left">
+      <div class="pane-title">データソース</div>
+      <div class="table-list-container" id="tableList">
+        <!-- JSで動的にテーブル構造を描画 -->
+      </div>
+      
+      <!-- CSV ドラッグ＆ドロップ -->
+      <div class="csv-upload-area" id="csvDropzone">
+        <span class="material-symbols-outlined upload-icon">cloud_upload</span>
+        <div class="upload-text">CSVファイルをドラッグ＆ドロップ</div>
+        <div class="upload-subtext">またはクリックして選択</div>
+        <input type="file" id="csvFileInput" accept=".csv" style="display: none;">
+      </div>
+    </aside>
+
+    <!-- ==========================================
+         2. 中央ペイン: Blocklyワークスペース
+         ========================================== -->
+    <section class="blockly-pane">
+      <div id="blocklyDiv"></div>
+    </section>
+
+    <!-- ==========================================
+         3. 右ペイン: SQLコード表示 ＆ 結果 / 差分表示
+         ========================================== -->
+    <aside class="sidebar-right">
+      <!-- リアルタイムSQLプレビュー -->
+      <div class="sql-preview-box">
+        <div class="pane-title" style="padding: 0;">生成されたSQL</div>
+        <div class="code-container" id="sqlCodeArea">
+          <span class="code-placeholder">ブロックを配置するとここにSQLが自動生成されます。</span>
+        </div>
+        <div class="sql-actions">
+          <button class="btn btn-primary" id="runQueryBtn">
+            <span class="material-symbols-outlined">play_arrow</span>
+            SQL実行
+          </button>
+        </div>
+      </div>
+
+      <!-- 実行結果 & 差分ビュー -->
+      <div class="result-pane">
+        <div class="result-status-bar">
+          <div class="status-indicator">
+            <span class="status-dot" id="statusDot"></span>
+            <span id="statusText">クエリ未実行</span>
+          </div>
+          <div id="affectedRowsText"></div>
+        </div>
+        
+        <div class="result-view-container" id="resultViewContainer">
+          <!-- デフォルトガイド状態 -->
+          <div class="empty-result-state" id="emptyResultState">
+            <span class="material-symbols-outlined empty-icon">play_circle</span>
+            <div class="empty-text">
+              左側のブロックを組み立てて「SQL実行」をクリックしてください。<br>
+              データの変化（追加・更新・削除）がリアルタイムに視覚化されます。
+            </div>
+          </div>
+          
+          <!-- 実行結果テーブル・Before/After表示エリア (JSで動的に挿入) -->
+          <div id="dynamicResultView" style="display: none; height: 100%;"></div>
+        </div>
+      </div>
+    </aside>
+
+  </main>
+
+  <!-- ==========================================
+       Blockly ツールボックス定義
+       ========================================== -->
+  <xml id="toolbox" style="display: none">
+    <category name="クエリ開始" colour="#1a73e8">
+      <block type="sql_select"></block>
+      <block type="sql_insert"></block>
+      <block type="sql_update"></block>
+      <block type="sql_delete"></block>
+    </category>
+    <category name="句・接続" colour="#5f6368">
+      <block type="sql_from"></block>
+      <block type="sql_join"></block>
+      <block type="sql_where"></block>
+      <block type="sql_group_by"></block>
+      <block type="sql_order_by"></block>
+      <block type="sql_limit"></block>
+    </category>
+    <category name="列・テーブル" colour="#188038">
+      <block type="sql_val_column"></block>
+      <block type="sql_val_table"></block>
+    </category>
+    <category name="条件・パラメータ" colour="#e37400">
+      <block type="sql_val_compare"></block>
+      <block type="sql_val_text"></block>
+      <block type="sql_val_list"></block>
+    </category>
+  </xml>
+
+  <!-- エントリーJS -->
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
