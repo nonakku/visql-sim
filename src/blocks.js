@@ -19,7 +19,6 @@ export function defineSQLBlocks() {
           .setCheck('SQL_VALUE')
           .appendField('SELECT');
       this.setNextStatement(true, 'SQL_STATEMENT');
-      this.setStyle('hat_style'); // ハット型（開始）スタイルを適用可能にする
       this.setColour(COL_SELECT);
       this.setTooltip('取得する列（カラム）を指定します。* を指定するとすべての列を取得します。');
     }
@@ -131,7 +130,6 @@ export function defineSQLBlocks() {
       this.appendDummyInput()
           .appendField(')');
       this.setColour(COL_DML);
-      this.setStyle('hat_style');
       this.setTooltip('テーブルに新しいレコードを追加します。カンマ区切りで値を並べます。');
       this.inputsInline(true);
     }
@@ -151,7 +149,6 @@ export function defineSQLBlocks() {
           .appendField('=');
       this.setNextStatement(true, 'SQL_STATEMENT');
       this.setColour(COL_DML);
-      this.setStyle('hat_style');
       this.setTooltip('テーブル内の既存データを更新します。WHERE句と組み合わせて更新対象を限定します。');
       this.inputsInline(true);
     }
@@ -165,7 +162,6 @@ export function defineSQLBlocks() {
           .appendField('DELETE FROM');
       this.setNextStatement(true, 'SQL_STATEMENT');
       this.setColour(COL_DML);
-      this.setStyle('hat_style');
       this.setTooltip('テーブルからデータを削除します。WHERE句と組み合わせて削除対象を限定します。');
     }
   };
