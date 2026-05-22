@@ -628,3 +628,93 @@ td.cell-updated {
   font-size: 13px;
   line-height: 1.5;
 }
+
+/* =========================================================================
+   Blockly ツールボックス & カテゴリーのプレミアムUXカスタマイズ (Google Minimal 仕様)
+   ========================================================================= */
+
+/* ツールボックス全体の背景とフラット化 */
+.blocklyToolboxDiv {
+  background-color: var(--bg-primary) !important;
+  border-right: 1px solid var(--border-color) !important;
+  padding-top: 12px !important;
+  box-shadow: none !important;
+}
+
+/* カテゴリー行の共通基本設計 */
+.blocklyTreeRow {
+  position: relative !important;
+  font-family: var(--font-sans) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: #3c4043 !important; /* W3Cアクセシビリティ準拠のチャコールグレー */
+  padding: 10px 16px 10px 24px !important; /* 左側にカラーバー描画用の十分な余白を確保 */
+  margin: 4px 8px !important;
+  border-radius: 4px !important;
+  border: none !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  transition: background-color 0.15s ease, color 0.15s ease !important;
+}
+
+/* Blocklyデフォルトの野暮ったい四角・フォルダアイコンを非表示 */
+.blocklyTreeIcon {
+  display: none !important;
+}
+
+/* カテゴリーテキストの色を親要素から継承 */
+.blocklyTreeLabel {
+  font-family: var(--font-sans) !important;
+  color: inherit !important;
+  padding-left: 0 !important;
+}
+
+/* 左端の極細縦型スリムカラーバーの共通定義 */
+.blocklyTreeRow::before {
+  content: "" !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 15% !important;
+  height: 70% !important;
+  width: 0px !important; /* 初期状態（非アクティブ・非ホバー）は非表示 */
+  border-radius: 0 2px 2px 0 !important;
+  transition: width 0.15s ease, background-color 0.15s ease !important;
+}
+
+/* ホバー時のマイクロインタラクション */
+.blocklyTreeRow:hover {
+  background-color: rgba(60, 64, 67, 0.04) !important;
+  color: var(--accent-color) !important;
+}
+.blocklyTreeRow:hover::before {
+  width: 4px !important;
+}
+
+/* 選択（アクティブ）状態の Google Minimal スタイル */
+.blocklyTreeRow.blocklyTreeSelected {
+  background-color: #e8f0fe !important; /* 淡いブルー背景 */
+  color: #1a73e8 !important; /* Google Blue */
+}
+.blocklyTreeRow.blocklyTreeSelected::before {
+  width: 6px !important; /* 選択時はカラーバーの幅を拡張してアクティブ感を強調 */
+}
+
+/* カテゴリーごとの個別インジケータカラー定義 (順序依存: :nth-child) */
+/* 1. クエリ開始 (ロイヤルブルー) */
+.blocklyTreeRow:nth-child(1)::before {
+  background-color: #1e3a8a !important;
+}
+/* 2. 句・接続 (スレートグレー) */
+.blocklyTreeRow:nth-child(2)::before {
+  background-color: #475569 !important;
+}
+/* 3. 列・テーブル (セージグリーン) */
+.blocklyTreeRow:nth-child(3)::before {
+  background-color: #16a34a !important;
+}
+/* 4. 条件・パラメータ (ゴールド) */
+.blocklyTreeRow:nth-child(4)::before {
+  background-color: #b45309 !important;
+}
+
