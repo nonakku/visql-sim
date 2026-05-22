@@ -2,7 +2,7 @@
    Visual SQL Simulator (visql-sim) - Minimal Professional Style Sheet
    ========================================================================= */
 
-/* 🔤 フォントと変数のインポート */
+/* フォントと変数のインポート */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
 
 :root {
@@ -27,7 +27,7 @@
   --font-mono: 'JetBrains Mono', 'Courier New', Courier, monospace;
 }
 
-/* 🧹 基本リセット & 共通スタイル */
+/* 基本リセット & 共通スタイル */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -44,7 +44,7 @@ body {
   flex-direction: column;
 }
 
-/* 🏢 ヘッダー領域 */
+/* ヘッダー領域 */
 .app-header {
   background-color: var(--bg-primary);
   border-bottom: 1px solid var(--border-color);
@@ -125,7 +125,7 @@ body {
   font-size: 18px;
 }
 
-/* 🖼️ メインレイアウト（3ペイン構成） */
+/* メインレイアウト（3ペイン構成） */
 .app-container {
   flex: 1;
   display: grid;
@@ -212,7 +212,7 @@ body {
   opacity: 0.8;
 }
 
-/* 📥 CSV ドラッグ＆ドロップエリア */
+/* CSV ドラッグ＆ドロップエリア */
 .csv-upload-area {
   margin: 16px;
   padding: 20px;
@@ -272,6 +272,24 @@ body {
   background-color: #fafafa !important;
 }
 
+/* Blocklyワークスペースが空の時の透かしビジュアルヒント */
+.blockly-pane.workspace-empty::before {
+  content: "ここに SELECT またはデータ操作ブロックを置いてクエリを始めましょう\n\n(左側の「クエリ開始」カテゴリからドラッグしてください)";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--text-muted);
+  font-size: 14px;
+  text-align: center;
+  white-space: pre-line;
+  pointer-events: none;
+  z-index: 99; /* Blocklyの描画領域の上に重ねる */
+  opacity: 0.65;
+  font-weight: 500;
+  line-height: 1.8;
+}
+
 /* =========================================================================
    右ペイン: SQLコード表示 ＆ 結果 / 差分表示
    ========================================================================= */
@@ -281,6 +299,138 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+/* クイック組み立てガイド (アコーディオン) */
+.guide-accordion {
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-primary);
+}
+
+.guide-header {
+  width: 100%;
+  padding: 12px 16px;
+  background-color: var(--bg-secondary);
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  text-align: left;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  transition: background-color 0.15s;
+}
+
+.guide-header:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.guide-header-title {
+  flex: 1;
+}
+
+.guide-arrow {
+  transition: transform 0.25s ease;
+  color: var(--text-secondary);
+}
+
+.guide-accordion.open .guide-arrow {
+  transform: rotate(180deg);
+}
+
+.guide-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.25s ease-out, padding 0.25s ease-out;
+  padding: 0 16px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.guide-accordion.open .guide-content {
+  max-height: 380px; /* ガイドの最大高さ */
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.guide-section {
+  margin-bottom: 14px;
+}
+
+.guide-section:last-child {
+  margin-bottom: 0;
+}
+
+.guide-section h4 {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.guide-section p {
+  margin-bottom: 6px;
+}
+
+.guide-section ol {
+  padding-left: 18px;
+  margin-bottom: 6px;
+}
+
+.guide-section li {
+  margin-bottom: 4px;
+}
+
+/* SQLフロービジュアル */
+.guide-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin: 10px 0;
+  background-color: var(--bg-secondary);
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+}
+
+.flow-step {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: #ffffff;
+}
+
+.step-select { background-color: #1e3a8a; }
+.step-from { background-color: #475569; }
+.step-join { background-color: #475569; }
+.step-where { background-color: #b45309; }
+.step-group { background-color: #0f766e; }
+.step-order { background-color: #0f766e; }
+.step-limit { background-color: #0f766e; }
+
+.flow-arrow {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.guide-tip {
+  font-size: 11px;
+  color: #b45309;
+  background-color: #fdf5e6;
+  padding: 6px 10px;
+  border-radius: 4px;
+  border: 1px solid #fce8e6;
+  font-weight: 500;
 }
 
 .sql-preview-box {
@@ -319,7 +469,7 @@ body {
   gap: 8px;
 }
 
-/* 📊 実行結果・差分（Diff）エリア */
+/* 実行結果・差分（Diff）エリア */
 .result-pane {
   flex: 1;
   display: flex;
@@ -361,7 +511,7 @@ body {
   padding: 16px;
 }
 
-/* 💡 Before / After スプリットビュー */
+/* Before / After スプリットビュー */
 .split-view-container {
   display: flex;
   flex-direction: column;
@@ -397,7 +547,7 @@ body {
   overflow: auto;
 }
 
-/* 📊 データテーブル定義 */
+/* データテーブル定義 */
 .data-table {
   width: 100%;
   border-collapse: collapse;
@@ -428,7 +578,7 @@ body {
   background-color: #fafafa;
 }
 
-/* 🟢🟡🔴 差分表示のスタイリング (淡く、可読性重視) */
+/* 差分表示のスタイリング (淡く、可読性重視) */
 tr.row-inserted {
   background-color: var(--diff-insert-bg) !important;
 }
@@ -456,7 +606,7 @@ td.cell-updated {
   margin-top: 2px;
 }
 
-/* ℹ️ ガイド・プレースホルダー領域 */
+/* ガイド・プレースホルダー領域 */
 .empty-result-state {
   display: flex;
   flex-direction: column;

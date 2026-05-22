@@ -32,6 +32,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // 左ペインのテーブル一覧表示
   renderTableList();
 
+  // アコーディオンガイドの初期化
+  setupGuideAccordion();
+
   // イベントリスナーのセットアップ
   setupEventListeners();
 });
@@ -69,6 +72,8 @@ function initBlockly() {
 
   // リアルタイムに生成されるSQLをプレビュー領域に表示するイベント監視
   workspace.addChangeListener((event) => {
+    updateWorkspacePlaceholder();
+    
     // ドラッグ中やUI操作中の不要な実行を避ける
     if (event.type === Blockly.Events.BLOCK_MOVE ||
         event.type === Blockly.Events.BLOCK_CHANGE ||
@@ -78,6 +83,9 @@ function initBlockly() {
       updateSQLPreview();
     }
   });
+
+  // 初期プレースホルダー表示
+  updateWorkspacePlaceholder();
 }
 
 // リアルタイムSQLプレビューの更新
@@ -488,4 +496,32 @@ function handleCSVFile(file) {
     }
   };
   reader.readAsText(file, 'UTF-8');
+}
+
+// クイック組み立てガイド (アコーディオン) のセットアップ
+function setupGuideAccordion() {
+  const accordion = document.getElementById('guideAccordion');
+  const header = document.getElementById('guideHeader');
+  
+  if (!accordion || !header) return;
+
+  // デフォルトで開いた状態にする
+  accordion.classList.add('open');
+
+  header.addEventListener('click', () => {
+    accordion.classList.toggle('open');
+  });
+}
+
+// ワークスペース空の時のプレースホルダー表示制御
+function updateWorkspacePlaceholder() {
+  const blocklyPane = document.getElementById('blocklyPane');
+  if (!blocklyPane || !workspace) return;
+
+  const allBlocks = workspace.getAllBlocks(false);
+  if (allBlocks.length === 0) {
+    blocklyPane.classList.add('workspace-empty');
+  } else {
+    blocklyPane.classList.remove('workspace-empty');
+  }
 }

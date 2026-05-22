@@ -10,7 +10,7 @@
 </head>
 <body>
 
-  <!-- 🏢 ヘッダー -->
+  <!-- ヘッダー -->
   <header class="app-header">
     <div class="header-title-area">
       <span class="material-symbols-outlined header-logo">database</span>
@@ -29,7 +29,7 @@
     </div>
   </header>
 
-  <!-- 🖼️ メインコンテナ（3ペイン） -->
+  <!-- メインコンテナ（3ペイン構成） -->
   <main class="app-container">
     
     <!-- ==========================================
@@ -53,7 +53,7 @@
     <!-- ==========================================
          2. 中央ペイン: Blocklyワークスペース
          ========================================== -->
-    <section class="blockly-pane">
+    <section class="blockly-pane" id="blocklyPane">
       <div id="blocklyDiv"></div>
     </section>
 
@@ -61,6 +61,47 @@
          3. 右ペイン: SQLコード表示 ＆ 結果 / 差分表示
          ========================================== -->
     <aside class="sidebar-right">
+      <!-- クイック組み立てガイド (アコーディオン) -->
+      <div class="guide-accordion" id="guideAccordion">
+        <button class="guide-header" id="guideHeader">
+          <span class="material-symbols-outlined">help</span>
+          <span class="guide-header-title">SQL組み立てガイド</span>
+          <span class="material-symbols-outlined guide-arrow" id="guideArrow">expand_more</span>
+        </button>
+        <div class="guide-content" id="guideContent">
+          <div class="guide-section">
+            <h4>正しいパズルの繋ぎ順</h4>
+            <p>SQLには評価される正しい順番があります。visql-simでは、正しい順番でしかブロックが繋がらないように制限されています。</p>
+            <div class="guide-flow">
+              <span class="flow-step step-select">SELECT</span>
+              <span class="flow-arrow">→</span>
+              <span class="flow-step step-from">FROM</span>
+              <span class="flow-arrow">→</span>
+              <span class="flow-step step-join">JOIN</span>
+              <span class="flow-arrow">→</span>
+              <span class="flow-step step-where">WHERE</span>
+              <span class="flow-arrow">→</span>
+              <span class="flow-step step-group">GROUP</span>
+              <span class="flow-arrow">→</span>
+              <span class="flow-step step-order">ORDER</span>
+              <span class="flow-arrow">→</span>
+              <span class="flow-step step-limit">LIMIT</span>
+            </div>
+            <p class="guide-tip">※ 間違った順序（例: SELECTの直後にWHEREなど）では、反発して接続できません。</p>
+          </div>
+          <div class="guide-section">
+            <h4>操作ステップ</h4>
+            <ol>
+              <li>「<strong>クエリ開始</strong>」から <strong>SELECT</strong> を配置する。</li>
+              <li>右側の凹みに「<strong>列・テーブル</strong>」の <strong>列名ブロック</strong> をはめる。</li>
+              <li>「<strong>句・接続</strong>」から <strong>FROM</strong> を SELECT の下に繋げる。</li>
+              <li>FROM の右側に <strong>テーブル名ブロック</strong> をはめる。</li>
+              <li>「<strong>SQL実行</strong>」ボタンを押してデータを確認！</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
       <!-- リアルタイムSQLプレビュー -->
       <div class="sql-preview-box">
         <div class="pane-title" style="padding: 0;">生成されたSQL</div>
@@ -107,13 +148,13 @@
        Blockly ツールボックス定義
        ========================================== -->
   <xml id="toolbox" style="display: none">
-    <category name="クエリ開始" colour="#1a73e8">
+    <category name="クエリ開始" colour="#1e3a8a">
       <block type="sql_select"></block>
       <block type="sql_insert"></block>
       <block type="sql_update"></block>
       <block type="sql_delete"></block>
     </category>
-    <category name="句・接続" colour="#5f6368">
+    <category name="句・接続" colour="#475569">
       <block type="sql_from"></block>
       <block type="sql_join"></block>
       <block type="sql_where"></block>
@@ -121,11 +162,11 @@
       <block type="sql_order_by"></block>
       <block type="sql_limit"></block>
     </category>
-    <category name="列・テーブル" colour="#188038">
+    <category name="列・テーブル" colour="#16a34a">
       <block type="sql_val_column"></block>
       <block type="sql_val_table"></block>
     </category>
-    <category name="条件・パラメータ" colour="#e37400">
+    <category name="条件・パラメータ" colour="#b45309">
       <block type="sql_val_compare"></block>
       <block type="sql_val_text"></block>
       <block type="sql_val_list"></block>

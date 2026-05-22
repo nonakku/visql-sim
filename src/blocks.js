@@ -1,11 +1,11 @@
 import * as Blockly from 'blockly';
 
-// SQLブロック用のカスタムテーマカラー
-const COL_SELECT = '#1a73e8'; // Google Blue (主要な検索クエリ操作)
-const COL_TABLE = '#5f6368';  // ダークグレー (テーブルや静的スキーマ要素)
-const COL_WHERE = '#e37400';  // オレンジ (条件判定)
-const COL_DML = '#c26401';    // 暗いオレンジ (INSERT/UPDATE/DELETE データ操作)
-const COL_VALUE = '#188038';  // グリーン (パラメータ・定数・関数)
+// SQLブロック用のカスタムテーマカラー (Google仕様の洗練されたマテリアルトーン)
+const COL_SELECT = '#1e3a8a';  // ロイヤルインディゴネイビー (クエリ開始・DML)
+const COL_TABLE = '#475569';   // スレートブルーグレー (スキーマ・静的構造体)
+const COL_WHERE = '#b45309';   // アンバーゴールド/オーク (フィルタ・評価)
+const COL_CONTROL = '#0f766e'; // ディープコバルトティール (整理・ソート・制限)
+const COL_VALUE = '#16a34a';   // ソフトセージグリーン (パラメータ・値・データピース)
 
 // =========================================================================
 // 1. カスタムブロックの定義
@@ -18,7 +18,7 @@ export function defineSQLBlocks() {
       this.appendValueInput('COLUMNS')
           .setCheck('SQL_VALUE')
           .appendField('SELECT');
-      this.setNextStatement(true, 'SQL_STATEMENT');
+      this.setNextStatement(true, 'FROM_SECTION'); // SELECTの直後はFROMしか来られない
       this.setColour(COL_SELECT);
       this.setTooltip('取得する列（カラム）を指定します。* を指定するとすべての列を取得します。');
     }
@@ -30,8 +30,8 @@ export function defineSQLBlocks() {
       this.appendValueInput('TABLE')
           .setCheck('SQL_VALUE')
           .appendField('FROM');
-      this.setPreviousStatement(true, 'SQL_STATEMENT');
-      this.setNextStatement(true, 'SQL_STATEMENT');
+      this.setPreviousStatement(true, 'FROM_SECTION');
+      this.setNextStatement(true, ['JOIN_SECTION', 'WHERE_SECTION', 'GROUP_SECTION', 'ORDER_SECTION', 'LIMIT_SECTION']);
       this.setColour(COL_TABLE);
       this.setTooltip('取得元のテーブルを指定します。');
     }
@@ -52,8 +52,9 @@ export function defineSQLBlocks() {
       this.appendValueInput('RIGHT_KEY')
           .setCheck('SQL_VALUE')
           .appendField('=');
-      this.setPreviousStatement(true, 'SQL_STATEMENT');
-      this.setNextStatement(true, 'SQL_STATEMENT');
+      this.setPreviousStatement(true, 'JOIN_SECTION');
+      // JOINの次はさらなるJOIN、またはWHERE、GROUP、ORDER、LIMITの順で繋げられる
+      this.setNextStatement(true, ['JOIN_SECTION', 'WHERE_SECTION', 'GROUP_SECTION', 'ORDER_SECTION', 'LIMIT_SECTION']);
       this.setColour(COL_TABLE);
       this.setTooltip('別のテーブルを結合条件（ON キー1 = キー2）に基づいて結合します。');
       this.setInputsInline(true); // 横一列に並べる
@@ -66,8 +67,9 @@ export function defineSQLBlocks() {
       this.appendValueInput('CONDITION')
           .setCheck('SQL_VALUE')
           .appendField('WHERE');
-      this.setPreviousStatement(true, 'SQL_STATEMENT');
-      this.setNextStatement(true, 'SQL_STATEMENT');
+      this.setPreviousStatement(true, 'WHERE_SECTION');
+      // WHEREの次はGROUP、ORDER、LIMITのみが繋げられる（FROMやJOINには戻れない）
+      this.setNextStatement(true, ['GROUP_SECTION', 'ORDER_SECTION', 'LIMIT_SECTION']);
       this.setColour(COL_WHERE);
       this.setTooltip('データを絞り込むための条件を指定します。');
     }
@@ -79,9 +81,10 @@ export function defineSQLBlocks() {
       this.appendValueInput('COLUMN')
           .setCheck('SQL_VALUE')
           .appendField('GROUP BY');
-      this.setPreviousStatement(true, 'SQL_STATEMENT');
-      this.setNextStatement(true, 'SQL_STATEMENT');
-      this.setColour(COL_SELECT);
+      this.setPreviousStatement(true, 'GROUP_SECTION');
+      // GROUP BYの次はORDERまたはLIMITのみが繋げられる
+      this.setNextStatement(true, ['ORDER_SECTION', 'LIMIT_SECTION']);
+      this.setColour(COL_CONTROL);
       this.setTooltip('指定した列でデータをグループ化します。');
     }
   };
@@ -97,9 +100,10 @@ export function defineSQLBlocks() {
             ['昇順 (ASC)', 'ASC'],
             ['降順 (DESC)', 'DESC']
           ]), 'DIR');
-      this.setPreviousStatement(true, 'SQL_STATEMENT');
-      this.setNextStatement(true, 'SQL_STATEMENT');
-      this.setColour(COL_SELECT);
+      this.setPreviousStatement(true, 'ORDER_SECTION');
+      // ORDER BYの次はLIMITのみが繋げられる
+      this.setNextStatement(true, 'LIMIT_SECTION');
+      this.setColour(COL_CONTROL);
       this.setTooltip('指定した列に基づいてデータを並べ替えます。');
       this.setInputsInline(true);
     }
@@ -111,8 +115,9 @@ export function defineSQLBlocks() {
       this.appendDummyInput()
           .appendField('LIMIT')
           .appendField(new Blockly.FieldNumber(5, 0, 100, 1), 'LIMIT_NUM');
-      this.setPreviousStatement(true, 'SQL_STATEMENT');
-      this.setColour(COL_SELECT);
+      this.setPreviousStatement(true, 'LIMIT_SECTION');
+      // LIMITが文末となるため、次は繋げない
+      this.setColour(COL_CONTROL);
       this.setTooltip('取得する最大行数を指定します。');
     }
   };
@@ -129,7 +134,8 @@ export function defineSQLBlocks() {
           .setCheck('SQL_VALUE');
       this.appendDummyInput()
           .appendField(')');
-      this.setColour(COL_DML);
+      this.setColour(COL_SELECT);
+      // INSERTは単一ステートメントのため、次も前も接続しない
       this.setTooltip('テーブルに新しいレコードを追加します。カンマ区切りで値を並べます。');
       this.setInputsInline(true);
     }
@@ -147,8 +153,9 @@ export function defineSQLBlocks() {
       this.appendValueInput('VALUE')
           .setCheck('SQL_VALUE')
           .appendField('=');
-      this.setNextStatement(true, 'SQL_STATEMENT');
-      this.setColour(COL_DML);
+      // UPDATEの次はWHEREのみ繋げられる
+      this.setNextStatement(true, 'WHERE_SECTION');
+      this.setColour(COL_SELECT);
       this.setTooltip('テーブル内の既存データを更新します。WHERE句と組み合わせて更新対象を限定します。');
       this.setInputsInline(true);
     }
@@ -160,8 +167,9 @@ export function defineSQLBlocks() {
       this.appendValueInput('TABLE')
           .setCheck('SQL_VALUE')
           .appendField('DELETE FROM');
-      this.setNextStatement(true, 'SQL_STATEMENT');
-      this.setColour(COL_DML);
+      // DELETEの次はWHEREのみ繋げられる
+      this.setNextStatement(true, 'WHERE_SECTION');
+      this.setColour(COL_SELECT);
       this.setTooltip('テーブルからデータを削除します。WHERE句と組み合わせて削除対象を限定します。');
     }
   };
