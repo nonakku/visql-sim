@@ -1,5 +1,5 @@
 import * as Blockly from 'blockly';
-import { defineSQLBlocks, sqlGenerator } from './blocks';
+import { defineSQLBlocks, getSqlGenerator, initSqlGenerator } from './blocks';
 import {
   initDatabase,
   getTables,
@@ -22,6 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Blocklyカスタムブロック定義
   defineSQLBlocks();
+
+  // SQLジェネレータの初期化 (Blocklyがロードされた後に遅延実行)
+  initSqlGenerator();
 
   // ワークスペース注入
   initBlockly();
@@ -88,7 +91,7 @@ function updateSQLPreview() {
     topBlocks.forEach(block => {
       // クエリ開始系のブロック（SELECT/INSERT/UPDATE/DELETE）のみからSQL生成を開始
       if (['sql_select', 'sql_insert', 'sql_update', 'sql_delete'].includes(block.type)) {
-        const code = sqlGenerator.blockToCode(block);
+        const code = getSqlGenerator().blockToCode(block);
         if (code) {
           fullSQL += code + ';\n';
         }

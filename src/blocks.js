@@ -271,118 +271,139 @@ export function defineSQLBlocks() {
 // =========================================================================
 
 // Blockly標準のジェネレータクラスからSQL生成器を作成
-export const sqlGenerator = new Blockly.Generator('SQL');
+let sqlGenerator = null;
 
-// スクリプト生成に必要な初期設定
-sqlGenerator.scrub_ = function(block, code, opt_thisOnly) {
-  const nextBlock = block.getNextBlock();
-  let nextCode = '';
-  if (nextBlock && !opt_thisOnly) {
-    nextCode = '\n' + sqlGenerator.blockToCode(nextBlock);
+/**
+ * SQLジェネレータのインスタンスを安全に取得します。
+ * 未初期化の場合は自動で初期化処理を走らせます。
+ */
+export function getSqlGenerator() {
+  if (!sqlGenerator) {
+    initSqlGenerator();
   }
-  return code + nextCode;
-};
+  return sqlGenerator;
+}
 
-// 各ブロックに対するジェネレータ関数の割り当て
-sqlGenerator.forBlock['sql_select'] = function(block) {
-  const cols = sqlGenerator.valueToCode(block, 'COLUMNS', 0) || '*';
-  return `SELECT ${cols}`;
-};
+/**
+ * SQLジェネレータを明示的に初期化します。
+ * Blocklyライブラリが完全に読み込まれた後に呼び出される必要があります。
+ */
+export function initSqlGenerator() {
+  if (sqlGenerator) return; // 二重初期化防止
 
-sqlGenerator.forBlock['sql_from'] = function(block) {
-  const table = sqlGenerator.valueToCode(block, 'TABLE', 0) || 'employees';
-  return `FROM ${table}`;
-};
+  sqlGenerator = new Blockly.Generator('SQL');
 
-sqlGenerator.forBlock['sql_join'] = function(block) {
-  const joinType = block.getFieldValue('JOIN_TYPE');
-  const table = sqlGenerator.valueToCode(block, 'TABLE', 0) || 'departments';
-  const leftKey = sqlGenerator.valueToCode(block, 'LEFT_KEY', 0) || 'employees.dept_id';
-  const rightKey = sqlGenerator.valueToCode(block, 'RIGHT_KEY', 0) || 'departments.dept_id';
-  return `${joinType} ${table} ON ${leftKey} = ${rightKey}`;
-};
-
-sqlGenerator.forBlock['sql_where'] = function(block) {
-  const condition = sqlGenerator.valueToCode(block, 'CONDITION', 0) || '1 = 1';
-  return `WHERE ${condition}`;
-};
-
-sqlGenerator.forBlock['sql_group_by'] = function(block) {
-  const col = sqlGenerator.valueToCode(block, 'COLUMN', 0) || 'role';
-  return `GROUP BY ${col}`;
-};
-
-sqlGenerator.forBlock['sql_order_by'] = function(block) {
-  const col = sqlGenerator.valueToCode(block, 'COLUMN', 0) || 'salary';
-  const dir = block.getFieldValue('DIR');
-  return `ORDER BY ${col} ${dir}`;
-};
-
-sqlGenerator.forBlock['sql_limit'] = function(block) {
-  const limitNum = block.getFieldValue('LIMIT_NUM');
-  return `LIMIT ${limitNum}`;
-};
-
-sqlGenerator.forBlock['sql_insert'] = function(block) {
-  const table = sqlGenerator.valueToCode(block, 'TABLE', 0) || 'employees';
-  const values = sqlGenerator.valueToCode(block, 'VALUES', 0) || '107, \'新メンバー\', \'スタッフ\', 250000, \'D01\'';
-  return `INSERT INTO ${table} VALUES (${values})`;
-};
-
-sqlGenerator.forBlock['sql_update'] = function(block) {
-  const table = sqlGenerator.valueToCode(block, 'TABLE', 0) || 'employees';
-  const col = sqlGenerator.valueToCode(block, 'COLUMN', 0) || 'salary';
-  const val = sqlGenerator.valueToCode(block, 'VALUE', 0) || '380000';
-  return `UPDATE ${table} SET ${col} = ${val}`;
-};
-
-sqlGenerator.forBlock['sql_delete'] = function(block) {
-  const table = sqlGenerator.valueToCode(block, 'TABLE', 0) || 'employees';
-  return `DELETE FROM ${table}`;
-};
-
-// 値ブロック用のジェネレータ定義 (戻り値は [コード, 優先順位] の配列)
-sqlGenerator.forBlock['sql_val_column'] = function(block) {
-  const col = block.getFieldValue('COLUMN');
-  return [col, 0];
-};
-
-sqlGenerator.forBlock['sql_val_table'] = function(block) {
-  const table = block.getFieldValue('TABLE');
-  return [table, 0];
-};
-
-sqlGenerator.forBlock['sql_val_compare'] = function(block) {
-  const left = sqlGenerator.valueToCode(block, 'LEFT', 0) || 'salary';
-  const op = block.getFieldValue('OP');
-  let right = sqlGenerator.valueToCode(block, 'RIGHT', 0) || '300000';
-  
-  // LIKE演算子の場合、%ワイルドカードを適用しやすいよう補正するか、そのまま渡す
-  if (op === 'LIKE' && !right.includes('%')) {
-    // 引用符の中にある文字列の場合、自動でワイルドカードを包む
-    if (right.startsWith("'") && right.endsWith("'")) {
-      const val = right.slice(1, -1);
-      right = `'%${val}%'`;
+  // スクリプト生成に必要な初期設定
+  sqlGenerator.scrub_ = function(block, code, opt_thisOnly) {
+    const nextBlock = block.getNextBlock();
+    let nextCode = '';
+    if (nextBlock && !opt_thisOnly) {
+      nextCode = '\n' + sqlGenerator.blockToCode(nextBlock);
     }
-  }
-  
-  return [`${left} ${op} ${right}`, 0];
-};
+    return code + nextCode;
+  };
 
-sqlGenerator.forBlock['sql_val_text'] = function(block) {
-  const text = block.getFieldValue('TEXT');
-  // 数値だけで構成されている場合はクォートなし、文字列ならシングルクォートで囲う
-  if (/^\d+$/.test(text)) {
-    return [text, 0];
-  }
-  return [`'${text}'`, 0];
-};
+  // 各ブロックに対するジェネレータ関数の割り当て
+  sqlGenerator.forBlock['sql_select'] = function(block) {
+    const cols = sqlGenerator.valueToCode(block, 'COLUMNS', 0) || '*';
+    return `SELECT ${cols}`;
+  };
 
-sqlGenerator.forBlock['sql_val_list'] = function(block) {
-  const val1 = sqlGenerator.valueToCode(block, 'VAL1', 0) || 'NULL';
-  const val2 = sqlGenerator.valueToCode(block, 'VAL2', 0) || 'NULL';
-  const val3 = sqlGenerator.valueToCode(block, 'VAL3', 0) || 'NULL';
-  
-  const list = [val1, val2, val3].filter(v => v !== '').join(', ');
-  return [list, 0];
-};
+  sqlGenerator.forBlock['sql_from'] = function(block) {
+    const table = sqlGenerator.valueToCode(block, 'TABLE', 0) || 'employees';
+    return `FROM ${table}`;
+  };
+
+  sqlGenerator.forBlock['sql_join'] = function(block) {
+    const joinType = block.getFieldValue('JOIN_TYPE');
+    const table = sqlGenerator.valueToCode(block, 'TABLE', 0) || 'departments';
+    const leftKey = sqlGenerator.valueToCode(block, 'LEFT_KEY', 0) || 'employees.dept_id';
+    const rightKey = sqlGenerator.valueToCode(block, 'RIGHT_KEY', 0) || 'departments.dept_id';
+    return `${joinType} ${table} ON ${leftKey} = ${rightKey}`;
+  };
+
+  sqlGenerator.forBlock['sql_where'] = function(block) {
+    const condition = sqlGenerator.valueToCode(block, 'CONDITION', 0) || '1 = 1';
+    return `WHERE ${condition}`;
+  };
+
+  sqlGenerator.forBlock['sql_group_by'] = function(block) {
+    const col = sqlGenerator.valueToCode(block, 'COLUMN', 0) || 'role';
+    return `GROUP BY ${col}`;
+  };
+
+  sqlGenerator.forBlock['sql_order_by'] = function(block) {
+    const col = sqlGenerator.valueToCode(block, 'COLUMN', 0) || 'salary';
+    const dir = block.getFieldValue('DIR');
+    return `ORDER BY ${col} ${dir}`;
+  };
+
+  sqlGenerator.forBlock['sql_limit'] = function(block) {
+    const limitNum = block.getFieldValue('LIMIT_NUM');
+    return `LIMIT ${limitNum}`;
+  };
+
+  sqlGenerator.forBlock['sql_insert'] = function(block) {
+    const table = sqlGenerator.valueToCode(block, 'TABLE', 0) || 'employees';
+    const values = sqlGenerator.valueToCode(block, 'VALUES', 0) || '107, \'新メンバー\', \'スタッフ\', 250000, \'D01\'';
+    return `INSERT INTO ${table} VALUES (${values})`;
+  };
+
+  sqlGenerator.forBlock['sql_update'] = function(block) {
+    const table = sqlGenerator.valueToCode(block, 'TABLE', 0) || 'employees';
+    const col = sqlGenerator.valueToCode(block, 'COLUMN', 0) || 'salary';
+    const val = sqlGenerator.valueToCode(block, 'VALUE', 0) || '380000';
+    return `UPDATE ${table} SET ${col} = ${val}`;
+  };
+
+  sqlGenerator.forBlock['sql_delete'] = function(block) {
+    const table = sqlGenerator.valueToCode(block, 'TABLE', 0) || 'employees';
+    return `DELETE FROM ${table}`;
+  };
+
+  // 値ブロック用のジェネレータ定義 (戻り値は [コード, 優先順位] の配列)
+  sqlGenerator.forBlock['sql_val_column'] = function(block) {
+    const col = block.getFieldValue('COLUMN');
+    return [col, 0];
+  };
+
+  sqlGenerator.forBlock['sql_val_table'] = function(block) {
+    const table = block.getFieldValue('TABLE');
+    return [table, 0];
+  };
+
+  sqlGenerator.forBlock['sql_val_compare'] = function(block) {
+    const left = sqlGenerator.valueToCode(block, 'LEFT', 0) || 'salary';
+    const op = block.getFieldValue('OP');
+    let right = sqlGenerator.valueToCode(block, 'RIGHT', 0) || '300000';
+    
+    // LIKE演算子の場合、%ワイルドカードを適用しやすいよう補正するか、そのまま渡す
+    if (op === 'LIKE' && !right.includes('%')) {
+      // 引用符の中にある文字列の場合、自動でワイルドカードを包む
+      if (right.startsWith("'") && right.endsWith("'")) {
+        const val = right.slice(1, -1);
+        right = `'%${val}%'`;
+      }
+    }
+    
+    return [`${left} ${op} ${right}`, 0];
+  };
+
+  sqlGenerator.forBlock['sql_val_text'] = function(block) {
+    const text = block.getFieldValue('TEXT');
+    // 数値だけで構成されている場合はクォートなし、文字列ならシングルクォートで囲う
+    if (/^\d+$/.test(text)) {
+      return [text, 0];
+    }
+    return [`'${text}'`, 0];
+  };
+
+  sqlGenerator.forBlock['sql_val_list'] = function(block) {
+    const val1 = sqlGenerator.valueToCode(block, 'VAL1', 0) || 'NULL';
+    const val2 = sqlGenerator.valueToCode(block, 'VAL2', 0) || 'NULL';
+    const val3 = sqlGenerator.valueToCode(block, 'VAL3', 0) || 'NULL';
+    
+    const list = [val1, val2, val3].filter(v => v !== '').join(', ');
+    return [list, 0];
+  };
+}
