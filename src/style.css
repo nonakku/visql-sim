@@ -274,7 +274,7 @@ body {
 
 /* Blocklyワークスペースが空の時の透かしビジュアルヒント */
 .blockly-pane.workspace-empty::before {
-  content: "ここに SELECT またはデータ操作ブロックを置いてクエリを始めましょう\n\n(左側の「クエリ開始」カテゴリからドラッグしてください)";
+  content: "ここに SELECT またはデータ操作ブロックを置いてクエリを始めましょう\A\A(左側の「クエリ開始」カテゴリからドラッグしてください)";
   position: absolute;
   top: 50%;
   left: 50%;

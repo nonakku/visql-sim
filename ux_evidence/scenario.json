@@ -1,0 +1,21 @@
+{
+  "url": "http://localhost:5173/",
+  "disable_cache": true,
+  "viewport": { "width": 1280, "height": 800 },
+  "steps": [
+    { "action": "wait_for_selector", "target": "#blocklyDiv" },
+    { "action": "screenshot", "name": "01_loaded" },
+    { "action": "click", "target": ".blocklyTreeRow:has-text('クエリ開始')" },
+    { "action": "wait", "ms": 500 },
+    { "action": "screenshot", "name": "02_toolbox_query_start" },
+    { "action": "click", "target": ".blocklyTreeRow:has-text('句・接続')" },
+    { "action": "wait", "ms": 500 },
+    { "action": "screenshot", "name": "03_toolbox_clauses" },
+    { "action": "click", "target": ".blocklyTreeRow:has-text('列・テーブル')" },
+    { "action": "wait", "ms": 500 },
+    { "action": "screenshot", "name": "04_toolbox_columns" }
+  ],
+  "assertions": {
+    "zero_console_errors": true
+  }
+}

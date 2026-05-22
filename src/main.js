@@ -51,7 +51,7 @@ function initBlockly() {
   });
 
   workspace = Blockly.inject('blocklyDiv', {
-    toolbox: document.getElementById('toolbox'),
+    toolbox: '<xml><category name="読み込み中..."></category></xml>',
     theme: theme,
     grid: {
       spacing: 20,
@@ -70,6 +70,9 @@ function initBlockly() {
     trashcan: true
   });
 
+  // データベーススキーマに合わせてツールボックス（および影ブロック）を同期
+  updateToolboxSchema();
+
   // リアルタイムに生成されるSQLをプレビュー領域に表示するイベント監視
   workspace.addChangeListener((event) => {
     updateWorkspacePlaceholder();
@@ -86,6 +89,72 @@ function initBlockly() {
 
   // 初期プレースホルダー表示
   updateWorkspacePlaceholder();
+}
+
+// データベーススキーマに基づいてツールボックスと影ブロック（Shadow Blocks）を動的ビルド
+function updateToolboxSchema() {
+  if (!workspace) return;
+  
+  const tables = getTables();
+  const defaultTable1 = tables[0] || 'employees';
+  const defaultTable2 = tables[1] || (tables[0] ? tables[0] : 'departments');
+  
+  const cols1 = getTableColumns(defaultTable1);
+  const defaultCol1 = cols1[0] || '*';
+  
+  const cols2 = getTableColumns(defaultTable2);
+  const defaultCol2 = cols2[0] || '*';
+  
+  // WHERE用のデフォルト比較列 (数値系か、なければ最初のカラム)
+  let compareCol = defaultCol1;
+  let compareVal = '300000';
+  if (defaultTable1 === 'employees') {
+    compareCol = 'salary';
+  } else if (cols1.includes('age')) {
+    compareCol = 'age';
+    compareVal = '30';
+  }
+
+  const xmlText = `
+    <xml id="toolbox" style="display: none">
+      <category name="クエリ開始" colour="#1e3a8a">
+        <block type="sql_select"></block>
+        <block type="sql_insert"></block>
+        <block type="sql_update"></block>
+        <block type="sql_delete"></block>
+      </category>
+      
+      <category name="句・接続" colour="#475569">
+        <block type="sql_from"></block>
+        <block type="sql_join"></block>
+        <block type="sql_where"></block>
+        <block type="sql_group_by"></block>
+        <block type="sql_order_by"></block>
+        <block type="sql_limit"></block>
+      </category>
+      
+      <category name="列・テーブル" colour="#16a34a">
+        <block type="sql_val_column">
+          <field name="COLUMN">*</field>
+        </block>
+        <block type="sql_val_table">
+          <field name="TABLE">${defaultTable1}</field>
+        </block>
+      </category>
+      
+      <category name="条件・パラメータ" colour="#b45309">
+        <block type="sql_val_compare"></block>
+        <block type="sql_val_text"></block>
+        <block type="sql_val_list"></block>
+      </category>
+    </xml>
+  `;
+  
+  try {
+    workspace.updateToolbox(xmlText);
+  } catch (err) {
+    console.error("Failed to update toolbox schema dynamically:", err);
+  }
 }
 
 // リアルタイムSQLプレビューの更新
@@ -118,29 +187,26 @@ function updateSQLPreview() {
   }
 }
 
-// SQLの簡易キーワードハイライト (クリーンな色づかい)
+// SQLの簡易キーワードハイライト (クリーンな色づかい - 重複置換バグを防ぐため1回の走査でトークン置換)
 function syntaxHighlightSQL(sqlText) {
-  const keywords = [
-    'SELECT', 'FROM', 'WHERE', 'INNER JOIN', 'LEFT JOIN', 'ON',
-    'GROUP BY', 'ORDER BY', 'LIMIT', 'INSERT INTO', 'VALUES',
-    'UPDATE', 'SET', 'DELETE FROM', 'ASC', 'DESC'
-  ];
+  if (!sqlText) return '';
   
-  let highlighted = sqlText;
+  // 文字列、数値、およびSQLキーワードを一度にキャプチャして置換（HTMLタグ内の重複置換を防ぐ）
+  const regex = /('[^']*')|(\b\d+\b)|(\b(SELECT|FROM|WHERE|INNER JOIN|LEFT JOIN|ON|GROUP BY|ORDER BY|LIMIT|INSERT INTO|VALUES|UPDATE|SET|DELETE FROM|ASC|DESC)\b)/gi;
   
-  keywords.forEach(kw => {
-    // 完全一致で置換するために境界線(\b)を使用
-    const regex = new RegExp(`\\b${kw}\\b`, 'g');
-    highlighted = highlighted.replace(regex, `<span style="color: #1a73e8; font-weight: 500;">${kw}</span>`);
+  return sqlText.replace(regex, (match, p1, p2, p3) => {
+    if (p1) {
+      // 文字列のハイライト
+      return `<span style="color: #c26401;">${match}</span>`;
+    } else if (p2) {
+      // 数値のハイライト
+      return `<span style="color: #188038;">${match}</span>`;
+    } else if (p3) {
+      // キーワードのハイライト
+      return `<span style="color: #1a73e8; font-weight: 500;">${match.toUpperCase()}</span>`;
+    }
+    return match;
   });
-
-  // 数値のハイライト
-  highlighted = highlighted.replace(/\b(\d+)\b/g, '<span style="color: #188038;">$1</span>');
-  
-  // 文字列のハイライト
-  highlighted = highlighted.replace(/('[^']*')/g, '<span style="color: #c26401;">$1</span>');
-
-  return highlighted;
 }
 
 // =========================================================================
@@ -419,6 +485,7 @@ function setupEventListeners() {
     if (confirm('データベースのデータを初期状態（サンプルデータ）にリセットしますか？\nインポートされたカスタムCSVは消去されます。')) {
       initDatabase();
       renderTableList();
+      updateToolboxSchema(); // ツールボックスを新データベースの状態に同期
       alert('データベースをリセットしました。');
       
       // 結果エリアのリセット
@@ -476,7 +543,7 @@ function handleCSVFile(file) {
     return;
   }
 
-  // ファイル名から拡張子を排してテーブル名を決定 (スペースや不正文字の除去)
+  // ファイル名から拡張子を排してテーブル名を決定 (スペースや不正文字 of 不正文字の除去)
   const tableName = file.name.replace(/\.csv$/i, '')
                              .replace(/[^a-zA-Z0-9_]/g, '_')
                              .toLowerCase();
@@ -489,6 +556,7 @@ function handleCSVFile(file) {
       
       // UIの更新
       renderTableList();
+      updateToolboxSchema(); // ツールボックスを新データベースの状態に同期
       
       alert(`テーブル「${info.tableName}」（${info.rowCount} 行、カラム: ${info.columns.join(', ')}）を正常にインポートしました！\n\n値入力ブロック等で直接テーブル名を入力してご利用いただけます。`);
     } catch (err) {
