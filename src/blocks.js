@@ -56,7 +56,7 @@ export function defineSQLBlocks() {
       this.setNextStatement(true, 'SQL_STATEMENT');
       this.setColour(COL_TABLE);
       this.setTooltip('別のテーブルを結合条件（ON キー1 = キー2）に基づいて結合します。');
-      this.inputsInline(true); // 横一列に並べる
+      this.setInputsInline(true); // 横一列に並べる
     }
   };
 
@@ -101,7 +101,7 @@ export function defineSQLBlocks() {
       this.setNextStatement(true, 'SQL_STATEMENT');
       this.setColour(COL_SELECT);
       this.setTooltip('指定した列に基づいてデータを並べ替えます。');
-      this.inputsInline(true);
+      this.setInputsInline(true);
     }
   };
 
@@ -131,7 +131,7 @@ export function defineSQLBlocks() {
           .appendField(')');
       this.setColour(COL_DML);
       this.setTooltip('テーブルに新しいレコードを追加します。カンマ区切りで値を並べます。');
-      this.inputsInline(true);
+      this.setInputsInline(true);
     }
   };
 
@@ -150,7 +150,7 @@ export function defineSQLBlocks() {
       this.setNextStatement(true, 'SQL_STATEMENT');
       this.setColour(COL_DML);
       this.setTooltip('テーブル内の既存データを更新します。WHERE句と組み合わせて更新対象を限定します。');
-      this.inputsInline(true);
+      this.setInputsInline(true);
     }
   };
 
@@ -226,7 +226,7 @@ export function defineSQLBlocks() {
       this.setOutput(true, 'SQL_VALUE');
       this.setColour(COL_WHERE);
       this.setTooltip('左辺と右辺を比較する条件を作成します。文字の一致には LIKE を使います。');
-      this.inputsInline(true);
+      this.setInputsInline(true);
     }
   };
 
@@ -257,7 +257,7 @@ export function defineSQLBlocks() {
       this.setOutput(true, 'SQL_VALUE');
       this.setColour(COL_VALUE);
       this.setTooltip('複数の値をカンマ区切りで結合します。');
-      this.inputsInline(true);
+      this.setInputsInline(true);
     }
   };
 }
